@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -e
+
+export RAILS_ENV=${RAILS_ENV:=production}
+export AWS_DEFAULT_REGION=ap-northeast-1
+
+docker-compose run \
+  -e AWS_PROFILE \
+  builder \
+  ./bin/_deploy

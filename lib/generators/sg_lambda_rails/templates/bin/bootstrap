@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -e
+
+export AWS_DEFAULT_REGION=ap-northeast-1
+
+echo '== Building containers =='
+
+docker pull amazon/aws-sam-cli-build-image-ruby2.7
+docker-compose build
+
+docker-compose run builder \
+  ./bin/_bootstrap

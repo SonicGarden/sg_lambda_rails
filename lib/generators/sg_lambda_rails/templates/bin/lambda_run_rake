@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -e
+
+export RAILS_ENV=${RAILS_ENV:=production}
+export AWS_DEFAULT_REGION=ap-northeast-1
+
+RAKE_LAMBDA_ID=$(aws cloudformation list-stack-resources --stack-name <%= project_name %>-${RAILS_ENV} --query 'StackResourceSummaries[?LogicalResourceId==`RakeLambda`][PhysicalResourceId][0]' --output text)
+echo "== Run rake task on Lambda..."
+aws lambda invoke \
+  --function-name $RAKE_LAMBDA_ID tmp/migration.out \
+  --cli-binary-format raw-in-base64-out \
+  --payload "{\"task\":\"$@\"}" \
+  --log-type Tail \
+  --query 'LogResult' \
+  --output text \
+  | base64 -d

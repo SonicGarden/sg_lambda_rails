@@ -1,0 +1,146 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: <%= project_name %>
+
+Parameters:
+  RailsEnv:
+    Type: String
+    Default: staging
+    AllowedValues:
+      - staging
+      - production
+
+Globals:
+  Function:
+    Environment:
+      Variables:
+        RAILS_ENV: !Ref RailsEnv
+        JOBS_QUEUE_NAME: !GetAtt JobsQueue.QueueName
+
+Resources:
+  RailsLambda:
+    Type: AWS::Serverless::Function
+    Metadata:
+      DockerContext: ./.lamby/RailsLambda
+      Dockerfile: Dockerfile
+      DockerTag: web
+    Properties:
+      Events:
+        HttpApiProxy:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref RailsHttpApi
+      MemorySize: 2048
+      PackageType: Image
+      Timeout: 60
+      ReservedConcurrentExecutions: 100
+
+  RakeLambda:
+    Type: AWS::Serverless::Function
+    Metadata:
+      DockerContext: ./.lamby/RailsLambda
+      Dockerfile: Dockerfile
+      DockerTag: rake
+    Properties:
+      MemorySize: 1024
+      PackageType: Image
+      ImageConfig:
+        Command: ["task.handler"]
+      Timeout: 900
+#      Events:
+#        ImportTweets:
+#          Type: Schedule
+#          Properties:
+#            Input: '{"task": "about"}'
+#            Schedule: 'cron(0/5 * * * ? *)'
+
+  JobsLambda:
+    Type: AWS::Serverless::Function
+    Metadata:
+      DockerContext: ./.lamby/RailsLambda
+      Dockerfile: Dockerfile
+      DockerTag: jobs
+    Properties:
+      Events:
+        SQSJobs:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt JobsQueue.Arn
+            BatchSize: 1
+      MemorySize: 1792
+      PackageType: Image
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - sqs:*
+              Resource:
+                - !Sub arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${JobsQueue.QueueName}
+      Timeout: 900
+
+  RailsHttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: !Ref RailsEnv
+
+# TODO: FIXME
+#  RailsDomainName:
+#    Type: AWS::ApiGatewayV2::DomainName
+#    Properties:
+#      DomainName: example.com
+#      DomainNameConfigurations:
+#        - CertificateArn: arn:aws:acm:ap-northeast-1:*:certificate/****
+#          EndpointType: REGIONAL
+#          SecurityPolicy: TLS_1_2
+
+# TODO: FIXME
+#  RailsApiMapping:
+#    Type: AWS::ApiGatewayV2::ApiMapping
+#    DependsOn: RailsDomainName
+#    Properties:
+#      ApiId: !Ref RailsHttpApi
+#      DomainName: example.com
+#      Stage: !Ref RailsEnv
+
+# TODO: FIXME
+#  RailsRecordSet:
+#    Type: AWS::Route53::RecordSetGroup
+#    DependsOn: RailsApiMapping
+#    Properties:
+#      HostedZoneId: ****
+#      RecordSets:
+#        - Name: example.com
+#          Type: A
+#          AliasTarget:
+#            HostedZoneId: !GetAtt RailsDomainName.RegionalHostedZoneId
+#            DNSName: !GetAtt RailsDomainName.RegionalDomainName
+#            EvaluateTargetHealth: false
+
+  JobsQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      ReceiveMessageWaitTimeSeconds: 10
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt JobsDLQueue.Arn
+        maxReceiveCount: 13
+      VisibilityTimeout: 301
+
+  JobsDLQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      # 14 days(14 * 24 hours * 60 minutes * 60 seconds)
+      MessageRetentionPeriod: 1209600
+
+Outputs:
+  HttpApiUrl:
+    Description: Lambda Invoke URL
+    Value: !Sub https://${RailsHttpApi}.execute-api.${AWS::Region}.amazonaws.com/${RailsEnv}/
+
+  RailsLambdaResourceArn:
+    Description: Lambda ARN
+    Value: !GetAtt RailsLambda.Arn
+
+  TaskLambdaResourceArn:
+    Description: Lambda ARN
+    Value: !GetAtt RakeLambda.Arn
