@@ -1,6 +1,5 @@
 require 'activerecord-refresh_connection'
 require 'sg_lambda_rails/adjust_cloud_front_headers'
-require 'sg_lambda_rails/adjust_host_header'
 
 module SgLambdaRails
   class Railtie < Rails::Railtie
