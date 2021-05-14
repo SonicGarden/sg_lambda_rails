@@ -1,5 +1,5 @@
 module SgLambdaRails
-  class CloudFrontHeader
+  class AdjustCloudFrontHeaders
     def initialize(app)
       @app = app
     end
