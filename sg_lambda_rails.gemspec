@@ -29,9 +29,7 @@ Gem::Specification.new do |spec|
   # spec.executables   = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   # spec.require_paths = ["lib"]
 
-  spec.add_dependency "aws-sdk-ssm"
   spec.add_dependency "lambdakiq"
-  spec.add_dependency "activerecord-refresh_connection"
   spec.add_dependency "dotenv-rails"
   spec.add_dependency "lamby"
 
