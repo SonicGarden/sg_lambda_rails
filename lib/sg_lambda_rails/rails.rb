@@ -1,7 +1,5 @@
 require 'sg_lambda_rails/adjust_cloud_front_headers'
-unless ENV['IGNORE_CONNECTION_POOL_KILLER']
-  require 'sg_lambda_rails/connection_pool_killer'
-end
+require 'sg_lambda_rails/connection_pool_killer'
 
 module SgLambdaRails
   class Railtie < Rails::Railtie
