@@ -32,6 +32,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "lambdakiq"
   spec.add_dependency "dotenv-rails"
   spec.add_dependency "lamby"
+  spec.add_dependency "activerecord-nulldb-adapter"
 
   # spec.add_development_dependency 'rake'
   # spec.add_development_dependency 'rspec', '~> 2.3'
