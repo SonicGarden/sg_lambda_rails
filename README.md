@@ -2,6 +2,9 @@
 
 Rails アプリを AWS Lambda で運用する際に必要となる各種設定の雛形やスクリプト群です。
 
+### 利用中サービス
+* https://github.com/SonicGarden/rails-electron-update-service
+
 ## インストール
 
 ```Gemfile``` に以下の内容を追加してください。 
