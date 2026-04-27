@@ -4,6 +4,7 @@ Rails アプリを AWS Lambda で運用する際に必要となる各種設定�
 
 ### 利用中サービス
 * https://github.com/SonicGarden/rails-electron-update-service
+* https://github.com/search?q=org%3ASonicGarden+sg_lambda_rails+path%3AGemfile.lock&type=code
 
 ## インストール
 
